@@ -1,0 +1,6 @@
+../Core/Src/main.c:67:16:calc_pulse	7
+../Core/Src/main.c:85:5:__io_putchar	2
+../Core/Src/main.c:102:6:HAL_TIM_IC_CaptureCallback	4
+../Core/Src/main.c:127:5:main	1
+../Core/Src/main.c:176:6:SystemClock_Config	4
+../Core/Src/main.c:240:6:Error_Handler	1

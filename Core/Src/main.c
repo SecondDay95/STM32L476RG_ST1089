@@ -29,12 +29,19 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+typedef enum {
+	PULSE_9MS,
+	PULSE_4MS,
+	PULSE_2MS,
+	PULSE_LONG,
+	PULSE_SHORT,
+	PULSE_ERROR,
+}pulse_t;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define N_VAL		64
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -57,15 +64,58 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-int __io_putchar(int ch)
+static pulse_t calc_pulse(uint32_t time)
 {
+	if (time < 250)
+		return PULSE_ERROR;
+	else if (time < 1200)
+		return PULSE_SHORT;
+	else if (time < 2000)
+		return PULSE_LONG;
+	else if (time < 3000)
+		return PULSE_2MS;
+	else if (time < 6000)
+		return PULSE_4MS;
+	else if (time < 12000)
+		return PULSE_9MS;
+	else
+		return PULSE_ERROR;
+}
+
+int __io_putchar(int ch) {
+
   if (ch == '\n') {
+
     __io_putchar('\r');
+
   }
 
   HAL_UART_Transmit(&huart2, (uint8_t*)&ch, 1, HAL_MAX_DELAY);
 
   return 1;
+
+}
+
+volatile pulse_t values[N_VAL];
+int counter;
+
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
+  pulse_t new_val;
+
+  if (htim == &htim2) {
+    switch (HAL_TIM_GetActiveChannel(&htim2)) {
+      case HAL_TIM_ACTIVE_CHANNEL_1:
+        new_val = calc_pulse(HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1));
+        if (counter < N_VAL)
+          values[counter++] = new_val;
+        else
+          __BKPT(0);
+        break;
+      default:
+        break;
+    }
+  }
 }
 
 /* USER CODE END 0 */
@@ -102,6 +152,9 @@ int main(void)
   MX_TIM2_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+
+  HAL_TIM_Base_Start(&htim2);
+  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
 
   /* USER CODE END 2 */
 
