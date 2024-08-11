@@ -27,6 +27,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include "ir.h"
+#include "ws2812b.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -128,6 +129,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   ir_init();
+  ws2812b_init();
 
   /* USER CODE END 2 */
 
@@ -137,8 +139,27 @@ int main(void)
   {
 
 	  int value = ir_read();
-	  if(value != -1)
-		  printf("button code: %02x\n", value);
+	  switch (value) {
+	  case IR_CODE_1:
+	    ws2812b_set_color(0, 255, 0, 0);
+	    ws2812b_update();
+	    break;
+	  case IR_CODE_2:
+	    ws2812b_set_color(0, 0, 255, 0);
+	    ws2812b_update();
+	    break;
+	  case IR_CODE_3:
+	    ws2812b_set_color(0, 0, 0, 255);
+	    ws2812b_update();
+	    break;
+	  case IR_CODE_ONOFF:
+	    ws2812b_set_color(0, 0, 0, 0);
+	    ws2812b_update();
+	    break;
+	  }
+
+
+
 
     /* USER CODE END WHILE */
 
