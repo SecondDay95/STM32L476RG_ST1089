@@ -25,18 +25,12 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include "ir.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef enum {
-	PULSE_9MS,
-	PULSE_4MS,
-	PULSE_2MS,
-	PULSE_LONG,
-	PULSE_SHORT,
-	PULSE_ERROR,
-}pulse_t;
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -63,55 +57,6 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-static volatile uint32_t received_value;
-static int received_bits;
-
-static void process_pulse(pulse_t pulse) {
-
-	if(received_bits >= 32)
-		return;
-
-	switch(pulse) {
-	case PULSE_SHORT:
-		received_value = received_value >> 1;
-		received_bits++;
-		break;
-	case PULSE_LONG:
-		received_value = (received_value >> 1) | 0x80000000;
-		received_bits++;
-		break;
-	case PULSE_4MS:
-		received_value = 0;
-		received_bits = 0;
-		break;
-	case PULSE_2MS:
-		if(received_bits == 0)
-			received_bits = 32;
-		break;
-	default:
-		received_bits = 0;
-		break;
-	}
-
-}
-
-static pulse_t calc_pulse(uint32_t time)
-{
-	if (time < 250)
-		return PULSE_ERROR;
-	else if (time < 1200)
-		return PULSE_SHORT;
-	else if (time < 2000)
-		return PULSE_LONG;
-	else if (time < 3000)
-		return PULSE_2MS;
-	else if (time < 6000)
-		return PULSE_4MS;
-	else if (time < 12000)
-		return PULSE_9MS;
-	else
-		return PULSE_ERROR;
-}
 
 int __io_putchar(int ch) {
 
@@ -129,31 +74,18 @@ int __io_putchar(int ch) {
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
-  pulse_t new_val;
 
   if (htim == &htim2) {
 
     switch (HAL_TIM_GetActiveChannel(&htim2)) {
       case HAL_TIM_ACTIVE_CHANNEL_1:
-        new_val = calc_pulse(HAL_TIM_ReadCapturedValue(htim, TIM_CHANNEL_1));
-        process_pulse(new_val);
+    	  ir_tim_interrupt();
         break;
       default:
         break;
     }
 
   }
-
-}
-
-int ir_read(void) {
-
-	if(received_bits != 32)
-		return -1;
-
-	uint8_t value = received_value >> 16;
-	received_bits = 0;
-	return value;
 
 }
 
@@ -192,8 +124,7 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  HAL_TIM_Base_Start(&htim2);
-  HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
+  ir_init();
 
   /* USER CODE END 2 */
 

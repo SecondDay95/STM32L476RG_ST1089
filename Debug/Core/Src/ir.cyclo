@@ -1,0 +1,4 @@
+../Core/Src/ir.c:16:16:calc_pulse	7
+../Core/Src/ir.c:34:6:ir_tim_interrupt	7
+../Core/Src/ir.c:67:6:ir_init	1
+../Core/Src/ir.c:74:5:ir_read	2
