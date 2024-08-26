@@ -45,7 +45,7 @@ void ws2812b_init(void) {
 
 	}
 
-	led_buffer[RESET_LEN + 24 * LED_N] = 100;
+	led_buffer[RESET_LEN + 24 * LED_N] = 0;
 
 	HAL_TIM_Base_Start(&htim3);
 
@@ -56,7 +56,10 @@ void ws2812b_init(void) {
 //Funkcja wysylajaca dane przez PWM za pomoca DMA do modulu WS2812B:
 void ws2812b_update(void) {
 
-	HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t*)led_buffer, sizeof(led_buffer));
+	HAL_StatusTypeDef x;
+	x = HAL_TIM_PWM_Start_DMA(&htim3, TIM_CHANNEL_1, (uint32_t*)led_buffer, sizeof(led_buffer));
+	//HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+	//x = HAL_TIM_DMABurst_MultiWriteStart(&htim3, TIM_DMABASE_CCR1, TIM_DMA_UPDATE, (uint32_t*)led_buffer, TIM_DMABURSTLENGTH_1TRANSFER, sizeof(led_buffer));
 
 }
 

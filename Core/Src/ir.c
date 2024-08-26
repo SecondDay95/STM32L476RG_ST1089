@@ -55,7 +55,7 @@ void ir_tim_interrupt(void) {
 		break;
 	case PULSE_2MS:
 		if(received_bits == 0)
-			received_bits = 32;
+			//received_bits = 32;
 		break;
 	default:
 		received_bits = 0;
